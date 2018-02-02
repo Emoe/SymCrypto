@@ -1,4 +1,5 @@
 import sys
+import random
 
 # Present S-Box
 Sbox = [0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd, 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1, 0x2]
@@ -59,10 +60,10 @@ def getTotalBias(biasOfRounds):
         totalBias = pow(2,len(biasOfRounds) -1) * totalBias
         print "Total Bias for "+ str(len(biasOfRounds)) +" rounds: " + str(totalBias)
 
-
-print "Aufgabe 3:"
+print ""
+print "Aufgabe 3 und 4:"
 # Find a linear Characteristic for 3 rounds
-rounds = 1
+
 linApprox = {2:[[2,2],[4,2],[8,2]],4:[[2,2],[4,2],[8,2]],8:[[2,2],[8,2]]}
 
 
@@ -79,29 +80,30 @@ def findLinearChar(biasOfRounds,currentRounds,currentVal,currentSbox):
         for nextval in linApprox[currentVal]:
                 findLinearChar(biasOfRounds,currentRounds,nextval,nextSbox)
 
-
-r = 1
+maxRounds = 10
 for startSbox in range(0,16):
-        for startVal in linApprox:
-                biasOfRounds = []
-                for firstVal in linApprox[startVal]:
+        startVal = random.choice([2,4,8])
+        biasOfRounds = []
+        nextVal = random.choice(linApprox[startVal])
+        print "S-Box("+str(0)+","+str(startSbox)+"): "+str(startVal) + " --> " + str(nextVal[0])
+        biasOfRounds.append(nextVal[1]) 
+        for r in range(1,maxRounds):
 
 
-                        
-                        r += 1
-                        if r >= 1:
-                                getTotalBias(biasOfRounds)
-                                break   
+                temp = {1:1,2:2,4:3,8:4}
+                temp2 = {1:1,2:2,3:4,4:8}              
+                inputPbox = (startSbox * 4) - 1 + temp[nextVal[0]] 
+                outputPbox = PBox[inputPbox]
+                startSbox = outputPbox / 4
+                if outputPbox % 5 == 1 or outputPbox % 5 == 0:
+                        break
+                nextinputMask = temp2[outputPbox % 5] 
+                nextVal = random.choice(linApprox[nextinputMask])
+                biasOfRounds.append(nextVal[1])
+                print "S-Box("+str(r)+","+str(startSbox)+"): "+str(nextinputMask) + " --> " + str(nextVal[0])                
+        getTotalBias(biasOfRounds)
+        print ""
+        
 
-#biasOfRounds = []
-#findLinearChar(biasOfRounds,1,0)        
-#for r in range(1,rounds + 1):
-#        for startSBox in range(0,16):
-#                for startVal in linApprox:
-#                        biasOfRounds = []
-#                        findLinearChar(biasOfRounds,r,startVal)
-
-print "Aufgabe 4:"
-# Pilling up Lema
 
 
