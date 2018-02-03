@@ -1,5 +1,7 @@
 import sys
 import random
+import math
+
 
 # Present S-Box
 Sbox = [0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd, 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1, 0x2]
@@ -66,7 +68,6 @@ print "Aufgabe 3 und 4:"
 
 linApprox = {2:[[2,2],[4,2],[8,2]],4:[[2,2],[4,2],[8,2]],8:[[2,2],[8,2]]}
 
-
 def findLinearChar(biasOfRounds,currentRounds,currentVal,currentSbox):
         if currentRounds >= rounds:
                 return
@@ -88,8 +89,6 @@ for startSbox in range(0,16):
         print "S-Box("+str(0)+","+str(startSbox)+"): "+str(startVal) + " --> " + str(nextVal[0])
         biasOfRounds.append(nextVal[1]) 
         for r in range(1,maxRounds):
-
-
                 temp = {1:1,2:2,4:3,8:4}
                 temp2 = {1:1,2:2,3:4,4:8}              
                 inputPbox = (startSbox * 4) - 1 + temp[nextVal[0]] 
@@ -103,7 +102,49 @@ for startSbox in range(0,16):
                 print "S-Box("+str(r)+","+str(startSbox)+"): "+str(nextinputMask) + " --> " + str(nextVal[0])                
         getTotalBias(biasOfRounds)
         print ""
-        
 
+print "Aufgabe 1.6"
 
+def travelCipher(r,startSbox,startmask,finOutputMask,finSboxOut):
+        global numberOfLinearChars
+        for nextmask in [1,2,4,8]:
+
+                inputPbox = int((startSbox * 4) + math.log(nextmask,2))
+                outputPbox = PBox[inputPbox]
+                startSbox = outputPbox / 4
+                nextmask = int(math.pow(2, outputPbox % 5))
+                if r == MaxHullRounds -1:
+                        if nextmask == finOutputMask and startSbox == finSboxOut:
+                                numberOfLinearChars += 1
+                else:
+                        travelCipher(r + 1,startSbox,nextmask,finOutputMask,finSboxOut)
+        return 0
+                
+
+MaxHullRounds = 4
+for sBoxIn in range(0,16):
+        for SboxOut in range(0,16):
+                for inputMask in [1,2,4,8]:
+                        for outputMask in [1,2,4,8]:
+                                numberOfLinearChars = 0
+                                travelCipher(0,sBoxIn,inputMask,outputMask,SboxOut)
+                                print "Number of Linear Characteristic for the linear hull (" + str(inputMask) + "," + str(outputMask) + ") started in Sbox " + str(sBoxIn) +  " and ended in Sbox " + str(SboxOut) + " :" + str(numberOfLinearChars)
+print ""
+print "Aufgabe 1.7"        
+for key in range(0,16):
+        print "Calculate linear approximation table with key "+ str(hex(key)) + " :"
+        print ("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F")
+        for inputMask in range(0,16):
+                sys.stdout.write("%2d: " % inputMask)
+                for outputMask in range(0,16):
+                        #sys.stdout.write(str(outputMask) + ", ")
+                        Counter = 0
+                        for inputSbox in range(0,16):
+                                outputSbox = Sbox[inputSbox ^ key]                
+                                if (testBit(inputMask,0) * testBit(inputSbox,0) ^ testBit(inputMask,1) * testBit(inputSbox,1) ^ testBit(inputMask,2) * testBit(inputSbox,2) ^ testBit(inputMask,3) * testBit(inputSbox,3) == testBit(outputMask,0) * testBit(outputSbox,0) ^ testBit(outputMask,1) * testBit(outputSbox,1) ^ testBit(outputMask,2) * testBit(outputSbox,2) ^ testBit(outputMask,3) * testBit(outputSbox,3)):
+                                        Counter += 1
+                        bias = int(float((float(Counter)/16)-0.5)*16)
+                        sys.stdout.write("%2d " % bias)
+                print ""
+        print ""                
 
