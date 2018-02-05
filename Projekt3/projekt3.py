@@ -112,19 +112,11 @@ def InvMixColumns(cols):
 
 def InvShiftrows(tempVal):
     tempVal = colsToRows(tempVal)
+  
+    for i in range(1,4):
+        for j in range(i):
+            tempVal[i].insert(0,tempVal[i].pop()) 
 
-    #move 1
-    tempVal[1].insert(0,tempVal[1].pop())
-    
-    #move 2
-    tempVal[2].insert(0,tempVal[2].pop())
-    tempVal[2].insert(0,tempVal[2].pop())
-    
-    #move 3
-    tempVal[3].insert(0,tempVal[3].pop())
-    tempVal[3].insert(0,tempVal[3].pop())
-    tempVal[3].insert(0,tempVal[3].pop())
-    
     return rowsToCols(tempVal)   
 
 def InvSubBytes(state):
@@ -159,17 +151,9 @@ def MixColumns(cols):
 def Shiftrows(state):
     state = colsToRows(state)
 
-    #move 1
-    state[1].append(state[1].pop(0))
-    
-    #move 2
-    state[2].append(state[2].pop(0))
-    state[2].append(state[2].pop(0))
-    
-    #move 3
-    state[3].append(state[3].pop(0))
-    state[3].append(state[3].pop(0))
-    state[3].append(state[3].pop(0))
+    for i in range(1,4):
+        for j in range(i):
+            state[i].append(state[i].pop(0))    
 
     return rowsToCols(state)   
 
@@ -189,6 +173,7 @@ def XorWords(word1, word2):
     temp = []
     for i in range(0,len(word1)):
         temp.append(word1[i] ^ word2[i])
+    
     return temp
 
 def RotWord(word):
@@ -227,12 +212,9 @@ def keySheduling(key):
 
 def encrypt(plaintext,key):
     tempVal = []
+    for i in range(0,4):
+        tempVal.append(plaintext[i*4:i * 4 +4])
 
-    tempVal.append(plaintext[:4])
-    tempVal.append(plaintext[4:8])
-    tempVal.append(plaintext[8:12])
-    tempVal.append(plaintext[12:16])
-    
     keyShedule = keySheduling(key)
 
     tempVal = AddRoundKey(tempVal,keyShedule,0)
@@ -255,12 +237,9 @@ def encrypt(plaintext,key):
 
 def decrypt(ciphertext,key):
     tempval = []
-
-    tempval.append(ciphertext[:4])
-    tempval.append(ciphertext[4:8])
-    tempval.append(ciphertext[8:12])
-    tempval.append(ciphertext[12:16])
-
+    for i in range(0,4):
+        tempval.append(ciphertext[i*4:i * 4 +4])
+    
     keyShedule = keySheduling(key)
 
     tempval = AddRoundKey(tempval,keyShedule,4)
@@ -315,7 +294,7 @@ def integrate(index):
     return potential
 
 
-def integral():
+def squareAttack():
     candidates = []
     for i in range(16):
         candidates.append(integrate(i))
@@ -332,6 +311,7 @@ def integral():
             return masterKey
 
 # Calculate the master key candidate from the final round key candidate
+# Reverse Key-Sheduling Part
 def round2master(rk):
     numberOfColumns = 4
     numberOf32BitWords = 4
@@ -341,22 +321,21 @@ def round2master(rk):
     for i in range(numberOfColumns * ( numberOfRounds + 1)):
         w.append([0,0,0,0])
         
-    i=0
+    i = 0
+
     while i < numberOf32BitWords:
         w[i] = [rk[4*i],rk[4*i+1], rk[4*i+2], rk[4*i+3]]
-        
-        #printWord(w[i])
-        i = i+1
+        i += 1
 
     j = numberOf32BitWords
     while j < numberOfColumns * (numberOfRounds + 1):
         if (j % numberOf32BitWords) == 0:
-            w[j][0] = w[j - numberOf32BitWords][0] ^ Sbox[w[j-1][1] ^ w[j-2][1]] ^ Rcon[numberOfRounds - j/numberOf32BitWords][0]
+            w[j][0] = w[j - numberOf32BitWords][0] ^ Sbox[w[j - 1][1] ^ w[j - 2][1]] ^ Rcon[numberOfRounds - j / numberOf32BitWords][0]
             for i in range(1,4):
-                w[j][i] = w[j - numberOf32BitWords][i] ^ Sbox[w[j-1][(i+1) % 4] ^ w[j-2][(i+1) % 4]]
+                w[j][i] = w[j - numberOf32BitWords][i] ^ Sbox[w[j - 1][(i + 1) % 4] ^ w[j - 2][(i + 1) % 4]]
         else:
             w[j] = XorWords(w[j - numberOf32BitWords], w[j - numberOf32BitWords - 1])
-        j = j+1
+        j += 1
     
 
     m = []
@@ -375,4 +354,4 @@ plaintexts = generatePlaintexts()
 # Encrypt all these Plaintexts with generated
 ciphertexts = encryptAllPlaintexts(plaintexts,key)
 # Attack :D
-integral()
+squareAttack()
