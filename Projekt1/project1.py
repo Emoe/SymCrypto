@@ -68,19 +68,6 @@ print "Aufgabe 3 und 4:"
 
 linApprox = {2:[[2,2],[4,2],[8,2]],4:[[2,2],[4,2],[8,2]],8:[[2,2],[8,2]]}
 
-def findLinearChar(biasOfRounds,currentRounds,currentVal,currentSbox):
-        if currentRounds >= rounds:
-                return
-        inputPbox = currentSbox * 4 + (currentVal[0] -1)
-        outputPbox = PBox[inputPbox]
-        nextSbox = outputPbox / 4
-        nextinputMask = outputPbox % 4 
-        print "S-Box("+str(currentRounds)+","+str(currentSbox)+"): "+str(currentVal[0]) + " --> " + str()
-        biasOfRounds.append(currentVal[1])
-
-        for nextval in linApprox[currentVal]:
-                findLinearChar(biasOfRounds,currentRounds,nextval,nextSbox)
-
 maxRounds = 10
 for startSbox in range(0,16):
         startVal = random.choice([2,4,8])
@@ -102,6 +89,10 @@ for startSbox in range(0,16):
                 print "S-Box("+str(r)+","+str(startSbox)+"): "+str(nextinputMask) + " --> " + str(nextVal[0])                
         getTotalBias(biasOfRounds)
         print ""
+
+print "Aufgabe 1.5"
+print "All those Characteristics share the same bias, because all have the same occurance in the linear approximation table. Furhtermore the all Input-Masks map to the corresponding Output Masks and build a sort of circle."
+print "Through the design of this Sbox all One bit inputs have a Bias of 2. Which is the lowest possible bias in the linear approximation table."
 
 print "Aufgabe 1.6"
 
